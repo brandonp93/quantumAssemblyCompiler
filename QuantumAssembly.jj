@@ -1,0 +1,302 @@
+PARSER_BEGIN(QuantumAssembly)
+import java.io.*;
+import java.util.*;
+class QuantumAssembly {
+	
+    public static void main(String[] args) throws ParseException, FileNotFoundException, IOException{
+		
+        try {
+			
+			//valida la sintaxis
+            QuantumAssembly quantum = new QuantumAssembly (System.in);
+			quantum.Start();
+			
+			//leer el lenguaje
+			ArrayList commands = new ArrayList();
+			int counter = 0;
+			String cadena;
+			FileReader f = new FileReader("Z.txt");
+			BufferedReader b = new BufferedReader(f);
+			String[] parts;
+			File file = new File("Write.java");
+			Writer writer = new BufferedWriter(new FileWriter(file));
+			//writer.write("import Quantum.*;"); //Import Quantum
+			writer.write("import java.util.*;\n"); //import Java Util
+			writer.write("public class Main {\n"); //Clase Main
+			writer.write("public static void main(String[] args) {\n"); //Abrir main
+			writer.write("ArrayList<?> hadamardMatrix = QuantumCompilerMethods.createHadamardMatrix();\n");
+			writer.write("ArrayList<?> controlledNotMatrix = QuantumCompilerMethods.createControlledNotMatrix();\n");
+			writer.write("ArrayList<?> identityMatrix = QuantumCompilerMethods.createIdentityMatrix();\n");
+			writer.write("HashMap<String,ArrayList<String>> undoing = new HashMap();\n");
+			writer.write("HashMap<ArrayList<String>, ComplexNumber[][]> undoingMatrix = new HashMap();\n");
+			while((cadena = b.readLine())!=null) {
+				//mirar cada linea del lenguaje
+				System.out.println(counter+". " + cadena);
+				parts = cadena.split(" ");
+				String codeLine;
+				if(parts[0].equals("INITIALIZE")){
+					String name = parts[1];
+					writer.write("ArrayList<ComplexNumber[]> "+name+" = new ArrayList();\n");
+					String register = parts[2].substring(1,parts[2].length()-1);
+					writer.write(name+" = QuantumCompilerMethods.createQubitRegister(\""+register+"\");\n");
+					
+					
+				}
+				else if(parts[0].equals("SELECT")){
+					String name = parts[1];
+					String registerToGetName = parts[2];
+					String[] registerRange = parts[3].split(":");
+					writer.write("ArrayList<ComplexNumber[]> "+name+" = new ArrayList("+registerToGetName+".subList("+registerRange[0]+","+registerRange[1]+"));\n");
+					
+				}
+				else if(parts[0].equals("APPLY")){
+					String gate = parts[1];
+					String name = parts[2];
+			
+					if(gate.equals("H")){
+						String variableName = null;
+						if (variableName == null){
+							writer.write(name" = QuantumCompilerMethods.quantumApply((ComplexNumber[][]) hadamardMatrix.get(0),"+name +");\n");
+													}
+						else{
+							writer.write(name" = QuantumCompilerMethods.quantumApply((ComplexNumber[][]) hadamardMatrix.get(0),"+name +");\n");
+													}
+					}
+					
+					else if(gate.equals("CNOT")){
+						String variableName = null;
+						if (variableName == null){
+							writer.write(name" = QuantumCompilerMethods.quantumApply((ComplexNumber[][]) controlledNotMatrix.get(0),"+name +");\n");
+													}
+						else{
+							writer.write("apply"+name+gate+" = QuantumCompilerMethods.quantumApply((ComplexNumber[][]) controlledNotMatrix.get(0),"+name +");\n");
+						}
+					}	
+					else if(gate.equals("NOT")){
+						String variableName = null;
+						if (variableName == null){
+							writer.write("ArrayList<ComplexNumber[]>  apply"+name+gate+" = QuantumCompilerMethods.quantumApplyNot(("+name+");\n");
+													}
+						else{
+							writer.write("apply"+name+gate+" = QuantumCompilerMethods.quantumApply((ComplexNumber[][]) controlledNotMatrix.get(0),"+name +");\n");
+						}
+					}
+				}
+				else if(parts[0].equals("TENSOR")){
+					String varName = parts[1];
+					String firtVar = parts[2];
+					String secondVar = parts[3];
+					String variableName = null;
+					if(firtVar.equals("Hada") && secondVar.equals("Hada")){
+						firtVar = "(ComplexNumber[][]) hadamardMatrix.get(0)";
+						secondVar = "(ComplexNumber[][]) hadamardMatrix.get(0)";
+					}
+					else if (firtVar.equals("Cnot") && secondVar.equals("Cnot")){
+						firtVar = "(ComplexNumber[][]) controlledNotMatrix.get(0)";
+						secondVar = "(ComplexNumber[][]) controlledNotMatrix.get(0)";
+					}
+					else if (firtVar.equals("Iden") && secondVar.equals("Iden")){
+						firtVar = "(ComplexNumber[][]) identityMatrix.get(0)";
+						secondVar = "(ComplexNumber[][]) identityMatrix.get(0)";
+					}
+					else if(firtVar.equals("Hada") && secondVar.equals("Cnot")){
+						firtVar = "(ComplexNumber[][]) hadamardMatrix.get(0)";
+						secondVar = "(ComplexNumber[][]) controlledNotMatrix.get(0)";
+					}
+					else if(firtVar.equals("Cnot") && secondVar.equals("Hada")){
+						firtVar = "(ComplexNumber[][]) controlledNotMatrix.get(0)";
+						secondVar = "(ComplexNumber[][]) hadamardMatrix.get(0)";
+					}
+					else if(firtVar.equals("Hada") && secondVar.equals("Iden")){
+						firtVar = "(ComplexNumber[][]) hadamardMatrix.get(0)";
+						secondVar = "(ComplexNumber[][]) identityMatrix.get(0)";
+					}
+					else if(firtVar.equals("Iden") && secondVar.equals("Hada")){
+						firtVar = "(ComplexNumber[][]) identityMatrix.get(0)";
+						secondVar = "(ComplexNumber[][]) hadamardMatrix.get(0)";
+					}
+					else if(firtVar.equals("Iden") && secondVar.equals("Cnot")){
+						firtVar = "(ComplexNumber[][]) identityMatrix.get(0)";
+						secondVar = "(ComplexNumber[][]) controlledNotMatrix.get(0)";
+					}
+					else if(firtVar.equals("Cnot") && secondVar.equals("Iden")){
+						firtVar = "(ComplexNumber[][]) controlledNotMatrix.get(0)";
+						secondVar = "(ComplexNumber[][]) identityMatrix.get(0)";
+					}
+					else{
+						if(secondVar.equals("Hada")){
+							System.out.println("Entor1");
+							secondVar = "hadamardMatrix";
+						}
+						if(firtVar.equals("Cnot")){
+							firtVar = "controlledNotMatrix";
+						}
+						if(secondVar.equals("Cnot")){
+							secondVar = "controlledNotMatrix)";
+						}
+						if(firtVar.equals("Iden")){
+							firtVar = "identityMatrix";
+						}
+						if(secondVar.equals("Iden")){
+							secondVar = "identityMatrix";
+						}
+					}
+					if (variableName == null){
+							writer.write("ArrayList<?> "+varName+" = QuantumCompilerMethods.tensorProduct("+firtVar+","+secondVar +");\n");
+						}
+					else{
+							writer.write(varName+" = QuantumCompilerMethods.tensorProduct("+firtVar+","+secondVar +");\n");
+					}
+				}
+				else if(parts[0].equals("CONCAT")){
+					String varName = parts[1];
+					String firtVar = parts[2];
+					String secondVar = parts[3];
+					String variableName = null;
+					if (variableName == null){
+						writer.write("ArrayList<ComplexNumber[]> "+varName+" = new ArrayList<>("+firtVar+");\n");
+						writer.write(varName+".add("+secondVar+");\n");
+					}
+					else{
+						writer.write(varName+".add("+firtVar+");\n");
+						writer.write(varName+".add("+secondVar+");\n");						
+					}
+				}
+				else if(parts[0].equals("INVERSE")){
+					String varName = parts[1];
+					String firtVar = parts[2];
+					String variableName = null;
+					if (variableName == null){
+						writer.write("ArrayList<ComplexNumber[]> "+varName+" = QuantumCompilerMethods.quantumInverse(undoingMatrix,undoing"+firtVar+","+varName +");\n");
+					}
+					else{
+						writer.write(varName+" = QuantumCompilerMethods.quantumInverse("+firtVar+","+varName +");\n");
+					}
+				}
+				else if(parts[0].equals("MEASURE")){
+					String varName = parts[1];
+					String firtVar = parts[2];
+					String variableName = null;
+					if (variableName == null){
+						writer.write("double "+firtVar+" = QuantumCompilerMethods.measure("+varName+");\n");
+					}
+					else{
+						writer.write(firtVar+" = QuantumCompilerMethods.measure("+varName+");\n");
+					}
+				}
+					
+				
+				
+				
+				counter++;
+			}
+			
+			writer.write("}\n"); //Cerrar Main
+			writer.write("}"); //Cerrar Clase
+			b.close();			
+			writer.close();
+			System.out.println("String Accepted");
+			
+		}catch (ParseException e) {
+            // Catching Throwable is ugly but JavaCC throws Error objects!
+            System.out.println("Syntax check failed: " + e.getMessage());
+        }
+    }
+}
+
+PARSER_END(QuantumAssembly)
+
+SKIP : {
+	" " | "\t" | "\n" | "\r"
+}
+
+TOKEN: { /* Gates */
+	<HADAMARD: "H">
+	| <PHASE: "PHASE"> 
+	| <INDEN: "IDENTITY"> 
+	| <CNOT: "CNOT"> 
+	| <NOT: "NOT">
+}
+
+TOKEN: { /* Commands */
+	<INIT: "INITIALIZE">
+	|<APP: "APPLY">
+	|<SEL: "SELECT">
+	|<CON: "CONCAT">
+	|<TEN: "TENSOR">
+	|<INV: "INVERSE">
+	|<MEAS: "MEASURE">
+}
+
+TOKEN:{
+	 <LBRACKET: "[" > 
+	| <RBRACKET: "]" >
+	| <SEMICOLON: ";">
+	| <TWODOT: ":" >
+	| <COMMA: "," >
+}
+
+
+TOKEN: { /* Identifiers */
+	<CHAR: ["a"-"z","A"-"Z"]>
+	|<UPPER: ["A"-"Z"]>
+	|<LOWER: ["a"-"z"]>
+	|<IDENTIFIER: ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_"])*>
+	|<QUBIT : (["0"-"1"])+>
+	|<NUMBER : (["0"-"7"])>
+}
+
+
+
+
+void Start():{}{
+	<INIT> <IDENTIFIER> (RegisterSize())? (Find())? <EOF>
+}
+
+void Find():{}{
+	 (
+	   (Register()) 
+		| (Apply())
+		| (Select())
+		| (Concatenate())
+		| (Tensor())
+		| (Inverse())
+		| (Measure())
+	 )
+}
+
+void Apply():{}{
+	<APP> (Gate()) <IDENTIFIER> (Find())?
+}
+
+void Register():{}{
+	<INIT> <IDENTIFIER> (RegisterSize())? (Find())?
+}
+
+void RegisterSize():{}{
+	<LBRACKET> <QUBIT> <RBRACKET>
+}
+
+void Select():{}{
+	<SEL> <IDENTIFIER> <IDENTIFIER> <NUMBER><TWODOT><NUMBER> (Find())?
+}
+
+void Concatenate():{}{
+	<CON> <IDENTIFIER> <IDENTIFIER> <IDENTIFIER>  (Find())?
+}
+
+void Tensor():{}{
+	<TEN> <IDENTIFIER> <IDENTIFIER> <IDENTIFIER> (Find())?
+}
+
+void Inverse():{}{
+	<INV> <IDENTIFIER> <IDENTIFIER> (Find())?
+}
+
+void Measure():{}{
+	<MEAS> <IDENTIFIER> <IDENTIFIER> (Find())?
+}
+
+void Gate():{}{
+	<PHASE> | <INDEN> | <CNOT> | <NOT> | <HADAMARD>
+}
