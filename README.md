@@ -1,4 +1,4 @@
-# quantumAssemblyCompiler
+# Quantum Assembly Compiler
 
 How to Execute jj 
 $javacc QuantumAssembly.jj
